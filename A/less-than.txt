@@ -1,0 +1,13 @@
+Syntax:
+	e1 < e2, where e1 and e2 are expressions
+
+Type-checking:
+	e1 and e2 must have the same type, and this type must be
+	either real or int
+	the result of the entire expression is bool
+
+Evaluation rules:
+	first evalutate e1 to a value, v1
+	then evaluate e2 to a value, v2
+	if v1 is less-than v2, then the result of the expression is true
+	else, if v1 is not less-than v2, then the result of the expression is false
