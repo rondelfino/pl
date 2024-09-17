@@ -147,31 +147,66 @@ fun lookup (pairs: (string * int) list, key: string) =
 
 (* int list -> int list * int list *)
 (* given a list of integers creates two lists of integers, one containing the non-negative entries, the other containing the negative entries. Relative order is preserved: All non-negative entries appear in the same order in which they were on the original list, and similarly for the negative entries *)
+
+(* fun splitup (xs: int list) = *)
+	(* let fun pop_lists (xs: int list, poss: int list, negs: int list) = *)
+			(* if null xs *)
+			(* then (poss, negs) *)
+			(* else *)
+				(* if hd xs < 0 *)
+				(* then pop_lists (tl xs, poss, negs @ [hd xs]) *)
+				(* else pop_lists (tl xs, poss @ [hd xs], negs) *)
+	(* in *)
+		(* pop_lists (xs, [], []) *)
+	(* end *)
+
+(* simpler solution *)
+(* no tail recursion *)
 fun splitup (xs: int list) =
-	let fun pop_lists (xs: int list, poss: int list, negs: int list) =
-			if null xs
-			then (poss, negs)
-			else
-				if hd xs < 0
-				then pop_lists (tl xs, poss, negs @ [hd xs])
-				else pop_lists (tl xs, poss @ [hd xs], negs)
+	if null xs
+	then ([],[])
+	else
+	let
+		val lists = splitup (tl xs)
+		val positives = #1 lists
+		val negatives = #2 lists
 	in
-		pop_lists (xs, [], [])
+		if hd xs >= 0
+		then (hd xs :: positives, negatives)
+		else (positives, hd xs :: negatives)
 	end
+
 
 
 (* int list * int -> int list * int list *)
 (* splits up a list based on a given threshold *)
+
+(* fun splitAt (xs: int list, threshold: int) = *)
+	(* let fun populate_lists (xs: int list, lte: int list, gt: int list) = *)
+		(* if null xs *)
+		(* then (gt, lte) *)
+		(* else *)
+			(* if hd xs <= threshold *)
+			(* then populate_lists (tl xs, lte @ [hd xs], gt) *)
+			(* else populate_lists (tl xs, lte, gt @ [hd xs]) *)
+	(* in *)
+		(* populate_lists (xs, [], []) *)
+	(* end *)
+
+(* simpler solution *)
+(* no tail recursion *)
 fun splitAt (xs: int list, threshold: int) =
-	let fun populate_lists (xs: int list, lte: int list, gt: int list) =
-		if null xs
-		then (gt, lte)
-		else
-			if hd xs <= threshold
-			then populate_lists (tl xs, lte @ [hd xs], gt)
-			else populate_lists (tl xs, lte, gt @ [hd xs])
+	if null xs
+	then ([],[])
+	else
+	let
+		val lists = splitAt (tl xs, threshold)
+		val larger = #1 lists
+		val smaller = #2 lists
 	in
-		populate_lists (xs, [], [])
+		if hd xs > threshold
+		then (hd xs :: larger, smaller)
+		else (larger, hd xs :: smaller)
 	end
 
 
@@ -218,14 +253,28 @@ fun qsort (xs: int list) =
 
 (* int list -> int list * int list *)
 (* produce two lists by alternating the elements between the lists *)
+
+(* fun divide (xs: int list) = *)
+	(* let fun alt_split (xs: int list, lista: int list, listb: int list) = *)
+			(* if null xs *)
+			(* then (lista, listb) *)
+			(* else if length xs = 1 then (lista @ [hd xs], listb) *)
+			(* else alt_split (tl (tl xs), lista @ [hd xs], listb @ [hd (tl xs)]) *)
+	(* in *)
+		(* alt_split (xs, [], []) *)
+	(* end *)
+
+(* simpler solution *)
 fun divide (xs: int list) =
-	let fun alt_split (xs: int list, lista: int list, listb: int list) =
-			if null xs
-			then (lista, listb)
-			else if length xs = 1 then (lista @ [hd xs], listb)
-			else alt_split (tl (tl xs), lista @ [hd xs], listb @ [hd (tl xs)])
+	if null xs
+	then ([],[])
+	else if null (tl xs)
+	then (xs, [])
+	else 
+	let
+		val lists = divide (tl (tl xs))
 	in
-		alt_split (xs, [], [])
+		(hd xs :: #1 lists, hd (tl xs) :: #2 lists)
 	end
 
 (* int list -> int list *)
@@ -286,51 +335,63 @@ fun multiply (factors: (int * int) list) =
 
 (* (int * int) list -> int list *)
 (* given a factorization list result from factorize creates a list all of possible products produced from using some or all of those prime factors no more than the number of times they are available *)
-fun all_products (factors: (int * int) list) =
-	let fun pow (base: int, exp: int) =
-			if exp = 0
-			then 1
-			else base * pow (base, exp-1)
 
-		fun insert_unique (num: int, xs: int list) =
-			if null xs
-			then num :: xs
-			else if num = hd xs then xs 
-			else if num >= hd xs
-				 then hd xs :: insert_unique (num, tl xs)
-				 else num :: xs
+(* fun all_products (factors: (int * int) list) = *)
+	(* let fun pow (base: int, exp: int) = *)
+			(* if exp = 0 *)
+			(* then 1 *)
+			(* else base * pow (base, exp-1) *)
 
-		fun multiply (num: int, xs: int list) = 
-			let fun helper (xs: int list, rsf: int list) =
-					if null xs
-					then rsf
-					else helper (tl xs, insert_unique ((num * hd xs), rsf))
-			in
-				helper (xs, xs)
-			end
+		(* fun insert_unique (num: int, xs: int list) = *)
+			(* if null xs *)
+			(* then num :: xs *)
+			(* else if num = hd xs then xs *) 
+			(* else if num >= hd xs *)
+				 (* then hd xs :: insert_unique (num, tl xs) *)
+				 (* else num :: xs *)
+
+		(* fun multiply (num: int, xs: int list) = *) 
+			(* let fun helper (xs: int list, rsf: int list) = *)
+					(* if null xs *)
+					(* then rsf *)
+					(* else helper (tl xs, insert_unique ((num * hd xs), rsf)) *)
+			(* in *)
+				(* helper (xs, xs) *)
+			(* end *)
 			
-		fun add_divisors_nonempty (factor: (int * int), divisors: int list) =
-			if (#2 factor) < 1
-			then divisors
-			else add_divisors_nonempty ((#1 factor, (#2 factor)-1), multiply (pow (#1 factor, #2 factor), divisors))
+		(* fun add_divisors_nonempty (factor: (int * int), divisors: int list) = *)
+			(* if (#2 factor) < 1 *)
+			(* then divisors *)
+			(* else add_divisors_nonempty ((#1 factor, (#2 factor)-1), multiply (pow (#1 factor, #2 factor), divisors)) *)
 
-		fun add_divisors (factor: (int * int), divisors: int list) =
-			if (#2 factor) < 0
-			then divisors
-			else add_divisors ((#1 factor, (#2 factor)-1), pow (#1 factor, #2 factor) :: divisors)
+		(* fun add_divisors (factor: (int * int), divisors: int list) = *)
+			(* if (#2 factor) < 0 *)
+			(* then divisors *)
+			(* else add_divisors ((#1 factor, (#2 factor)-1), pow (#1 factor, #2 factor) :: divisors) *)
 
 
-	in
-		let fun helper (factors: (int * int) list, divisors: int list) =
-				if null factors
-				then divisors
-				else if null divisors
-					 then helper (tl factors, add_divisors (hd factors, divisors))
-					 else helper (tl factors, add_divisors_nonempty (hd factors, divisors))
-		in
-			if null factors
-			then [1]
-			else helper (factors, [])
-		end
-	end
+	(* in *)
+		(* let fun helper (factors: (int * int) list, divisors: int list) = *)
+				(* if null factors *)
+				(* then divisors *)
+				(* else if null divisors *)
+					 (* then helper (tl factors, add_divisors (hd factors, divisors)) *)
+					 (* else helper (tl factors, add_divisors_nonempty (hd factors, divisors)) *)
+		(* in *)
+			(* if null factors *)
+			(* then [1] *)
+			(* else helper (factors, []) *)
+		(* end *)
+	(* end *)
 		
+(* simpler solution *)
+fun all_products (factors: (int * int) list) =
+	let fun all_divisors (divisor: int, product: int) =
+			if divisor > product
+			then []
+			else if product mod divisor = 0
+				 then divisor :: all_divisors (divisor+1, product)
+				 else all_divisors (divisor+1, product)
+	in
+		all_divisors (1, multiply factors)
+	end
